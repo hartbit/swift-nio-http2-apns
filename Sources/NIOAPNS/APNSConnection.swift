@@ -39,7 +39,7 @@ final public class APNSConnection {
         multiplexer.createStreamChannel(promise: streamPromise) { channel, streamID in
             let handlers: [ChannelHandler] = [
                 HTTP2ToHTTP1ClientCodec(streamID: streamID, httpProtocol: .https),
-                APNSRequestEncoder(deviceToken: deviceToken, apnsConfig: self.configuration),
+                APNSRequestEncoder<T>(deviceToken: deviceToken, apnsConfig: self.configuration),
                 APNSResponseDecoder(),
                 APNSStreamHandler()
             ]

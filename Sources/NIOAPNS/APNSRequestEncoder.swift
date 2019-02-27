@@ -10,18 +10,9 @@ import NIO
 import NIOHTTP1
 import NIOHTTP2
 
-// Can someone explain why I could do this, but not
-// let wrappedRequest = try! JSONEncoder().encode(req)
-// Cannot invoke 'encode' with an argument list of type '(APNotification)'
-
-extension Encodable {
-    func toJSONData() -> Data? {
-        return try? JSONEncoder().encode(self)
-    }
-}
-internal final class APNSRequestEncoder: ChannelOutboundHandler {
+internal final class APNSRequestEncoder<T: APNotification>: ChannelOutboundHandler {
     /// See `ChannelOutboundHandler.OutboundIn`.
-    typealias OutboundIn = APNotification
+    typealias OutboundIn = T
 
     /// See `ChannelOutboundHandler.OutboundOut`.
     typealias OutboundOut = HTTPClientRequestPart
@@ -35,8 +26,8 @@ internal final class APNSRequestEncoder: ChannelOutboundHandler {
     }
     /// See `ChannelOutboundHandler.write(ctx:data:promise:)`.
     func write(ctx: ChannelHandlerContext, data: NIOAny, promise: EventLoopPromise<Void>?) {
-        let req:APNotification = unwrapOutboundIn(data)
-        let wrappedRequest = req.toJSONData()!
+        let req: T = unwrapOutboundIn(data)
+        let wrappedRequest = try! JSONEncoder().encode(req)
         if let string = String.init(data: wrappedRequest, encoding: .utf8) {
             print(string)
         }
